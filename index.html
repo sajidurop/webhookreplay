@@ -1,0 +1,157 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>WebhookReplay — Debug webhooks without the guesswork.</title>
+<meta name="description" content="Capture webhook events, inspect headers and payloads, search and filter them, and replay events to a target URL to compare responses.">
+<meta name="keywords" content="webhook debugger, webhook replay, event inspector">
+<meta name="author" content="Sajidur">
+<meta property="og:title" content="WebhookReplay — Debug webhooks without the guesswork.">
+<meta property="og:description" content="Capture webhook events, inspect headers and payloads, search and filter them, and replay events to a target URL to compare responses.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://alltoolfree.site">
+<meta name="twitter:card" content="summary">
+<meta name="robots" content="index, follow">
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"SoftwareApplication","name":"WebhookReplay","applicationCategory":"DeveloperApplication","operatingSystem":"Web","author":{"@type":"Person","name":"Sajidur","url":"https://alltoolfree.site"},"offers":{"@type":"Offer","price":"0","priceCurrency":"USD"},"license":"https://opensource.org/licenses/MIT"}</script>
+<style>
+:root{--primary:#9333ea;--accent:#f3e8ff;--bg:#f8fafc;--ink:#0f172a;--muted:#64748b;--line:#e2e8f0;--card:#fff}
+*{box-sizing:border-box}body{margin:0;font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;background:var(--bg);color:var(--ink);line-height:1.55}
+header{background:var(--card);border-bottom:1px solid var(--line);padding:14px 20px;display:flex;gap:14px;align-items:center;flex-wrap:wrap;position:sticky;top:0;z-index:5}
+.logo{width:38px;height:38px;border-radius:10px;background:var(--primary);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:18px}
+header h1{font-size:19px;margin:0}header .tag{color:var(--muted);font-size:13px}
+header nav{margin-left:auto;display:flex;gap:12px;align-items:center;font-size:14px}
+header nav a{color:var(--ink);text-decoration:none}header nav a:hover{color:var(--primary)}
+main{max-width:1020px;margin:0 auto;padding:22px 16px 40px}
+.hero{background:var(--accent);border:1px solid var(--line);border-radius:14px;padding:18px 20px;margin-bottom:18px}
+.hero h2{margin:0 0 6px;font-size:22px}.hero p{margin:0;color:#334155}
+.panel{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px;margin-bottom:14px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}.grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px}
+@media(max-width:700px){.grid2,.grid3{grid-template-columns:1fr}}
+button{background:var(--card);border:1px solid var(--line);border-radius:8px;padding:8px 14px;cursor:pointer;font-size:14px}
+button.primary{background:var(--primary);color:#fff;border-color:var(--primary)}
+button:hover{filter:brightness(.96)}
+input,select,textarea{border:1px solid var(--line);border-radius:8px;padding:8px 10px;font-size:14px;font-family:inherit;background:#fff}
+textarea{width:100%}input[type=file]{border:none;padding:4px 0}
+table{width:100%;border-collapse:collapse;font-size:14px}th,td{text-align:left;padding:7px 8px;border-bottom:1px solid var(--line);vertical-align:top}
+tr.bad td{background:#fef2f2}.muted{color:var(--muted);font-size:13px}.ok{color:#15803d;font-weight:600}.warn{color:#b45309;font-weight:600}
+.issue{border-left:4px solid #f59e0b;background:#fffbeb;padding:10px 12px;border-radius:8px;margin-bottom:8px}
+.issue.error{border-color:#dc2626;background:#fef2f2}.issue.info{border-color:#64748b;background:#f8fafc}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;margin:12px 0}
+.stats>div{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:12px;text-align:center}
+.stats b{display:block;font-size:22px}.stats span{font-size:12px;color:var(--muted)}
+.shot{max-width:100%;border:1px solid var(--line);border-radius:8px}
+canvas.shot{width:100%;height:auto}
+pre{background:#0f172a;color:#e2e8f0;padding:12px;border-radius:8px;overflow:auto;font-size:12.5px;white-space:pre-wrap}
+code{background:#f1f5f9;padding:1px 5px;border-radius:5px;font-size:13px}
+.imgWrap{position:relative;display:inline-block;max-width:100%}.imgWrap img{max-width:100%;border-radius:8px;display:block}
+.pin{position:absolute;width:22px;height:22px;border-radius:50%;background:var(--primary);color:#fff;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;transform:translate(-50%,-50%);cursor:pointer}
+.traceRow{display:flex;gap:8px;align-items:center;margin:4px 0;font-size:13px}.tName{min-width:150px}.tBar{height:10px;border-radius:5px;display:inline-block}
+footer{border-top:1px solid var(--line);background:var(--card);padding:20px;text-align:center;font-size:14px;color:var(--muted)}
+footer a{color:var(--primary);text-decoration:none;margin:0 6px}footer a:hover{text-decoration:underline}
+body.client-view .admin-only{display:none}
+#toast{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);background:#0f172a;color:#fff;padding:10px 16px;border-radius:10px;font-size:14px;display:none;z-index:50}
+dialog{border:1px solid var(--line);border-radius:12px;padding:20px;max-width:420px}
+</style>
+</head>
+<body class="inbox">
+<header>
+<div class="logo">W</div>
+<div><h1>WebhookReplay</h1><div class="tag">Debug webhooks without the guesswork. · v1.0.0</div></div>
+<nav><a href="#app">App</a><a href="#how">How it works</a><button id="aboutBtn">About</button></nav>
+</header>
+<main id="app">
+<div class="hero"><h2>Debug webhooks without the guesswork.</h2><p>Capture webhook events, inspect headers and payloads, search and filter them, and replay events to a target URL to compare responses.</p></div>
+<div class="panel"><h3>Capture an event</h3><label>Source name <input id="srcName" placeholder="stripe / github / my-app"></label><br><label>Payload (JSON)<textarea id="payload" rows="6" placeholder='{"event":"order.created",…}'></textarea></label><br><button id="captureBtn" class="primary">Capture event</button> <button id="sampleBtn">Load sample</button></div>
+<div class="panel"><h3>Replay</h3><label>Target URL <input type="url" id="targetUrl" placeholder="https://your-server.example.com/webhook" style="width:70%"></label><br><label>Search <input id="q" placeholder="filter events…"></label> <span id="count" class="muted"></span> <button id="exportBtn">Export events</button> <button id="clearBtn">Clear all</button></div>
+<div id="list"></div>
+<div class="panel" id="how"><h3>How it works</h3><p>Paste a webhook payload (JSON) and capture it. Inspect it, search it, then replay it to any target URL you control and compare the response status and body. Events are stored locally with a 200-event retention cap.</p><p class="muted">Data is stored only in your browser (localStorage) unless a feature explicitly fetches a URL or API you enter. Run <code>npm start</code> for the real server — live checks run server-side and history is saved on disk. Opening <code>index.html</code> directly still works in browser-only mode.</p></div>
+</main>
+<footer>
+<p><strong>WebhookReplay v1.0.0</strong> · Created by <a href="https://alltoolfree.site" target="_blank" rel="noopener">Sajidur</a> · Open Source (MIT)</p>
+<p><a href="https://alltoolfree.site" target="_blank" rel="noopener">AllToolFree ↗</a> <a href="https://alltoolfree.site" target="_blank" rel="noopener">More free tools ↗</a> <a href="https://github.com/sajidurop/webhookreplay" target="_blank" rel="noopener">View source on GitHub ↗</a> <a href="https://alltoolfree.site" target="_blank" rel="noopener">Discover AllToolFree ↗</a></p>
+<p class="muted">Self-hostable. Works offline except for features that fetch a URL or API you supply.</p>
+</footer>
+<dialog id="aboutDlg"><h3>About WebhookReplay</h3><p>Capture webhook events, inspect headers and payloads, search and filter them, and replay events to a target URL to compare responses.</p><p>Created by <a href="https://alltoolfree.site" target="_blank" rel="noopener">Sajidur</a></p><p><a href="https://alltoolfree.site" target="_blank" rel="noopener">Discover AllToolFree ↗</a> — more free tools by the same creator.</p><p class="muted">MIT License. Version 1.0.0.</p><button id="closeDlg">Close</button></dialog>
+<div id="toast"></div>
+<script>
+const BRAND={creator:"Sajidur",website:"https://alltoolfree.site",repository:"https://github.com/sajidurop/webhookreplay",product:"WebhookReplay",version:"1.0.0"};
+const $=s=>document.querySelector(s);const $$=s=>[...document.querySelectorAll(s)];
+function save(k,v){try{localStorage.setItem("webhookreplay:"+k,JSON.stringify(v))}catch(e){}}
+function load(k,d){try{const v=JSON.parse(localStorage.getItem("webhookreplay:"+k));return v==null?d:v}catch(e){return d}}
+function download(name,text,type){const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([text],{type:type||"application/json"}));a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),2000)}
+function toast(m){const t=$("#toast");t.textContent=m;t.style.display="block";setTimeout(()=>t.style.display="none",2600)}
+function esc(s){return String(s==null?"":s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
+document.getElementById("aboutBtn").onclick=()=>document.getElementById("aboutDlg").showModal();
+document.getElementById("closeDlg").onclick=()=>document.getElementById("aboutDlg").close();
+
+function evs(){return load('evs',[])}
+function render(){
+ const q=($('#q').value||'').toLowerCase();
+ const list=evs().filter(e=>!q||JSON.stringify(e).toLowerCase().includes(q));
+ $('#list').innerHTML=list.map((e,i)=>`<div class="panel"><b>${esc(e.method)} ${esc(e.source||'manual')}</b> · ${esc(e.at.slice(0,19).replace('T',' '))} · ${e.status||''}<br><pre>${esc(JSON.stringify(e.payload,null,2).slice(0,600))}</pre><button data-i="${i}" class="replay">Replay to target</button> <button data-i="${i}" class="delEv">Delete</button><div class="repOut" id="rep-${i}"></div></div>`).join('')||'<p>No events yet. Paste a payload below to capture one, or send events to your target and paste them here.</p>';
+ $$('.replay').forEach(b=>b.onclick=async()=>{
+  const e=list[+b.dataset.i];const target=$('#targetUrl').value.trim();if(!target){toast('Enter a replay target URL');return}
+  const t0=performance.now();
+  try{const r=await fetch(target,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(e.payload)});$('#rep-'+b.dataset.i).innerHTML=`Replay: <b>${r.status}</b> in ${Math.round(performance.now()-t0)}ms — ${(await r.text()).slice(0,200)}`}
+  catch(err){$('#rep-'+b.dataset.i).innerHTML='Replay failed: '+esc(String(err).slice(0,120))}
+ });
+ $$('.delEv').forEach(b=>b.onclick=()=>{const l=evs();l.splice(+b.dataset.i,1);save('evs',l);render()});
+ $('#count').textContent=evs().length+' events stored';
+}
+$('#captureBtn').onclick=()=>{
+ let payload;try{payload=JSON.parse($('#payload').value)}catch(e){toast('Payload is not valid JSON: '+e.message);return}
+ const l=evs();l.unshift({at:new Date().toISOString(),method:'POST',source:$('#srcName').value||'manual',payload,status:'captured'});save('evs',l.slice(0,200));render();toast('Event captured');
+};
+$('#sampleBtn').onclick=()=>{$('#payload').value=JSON.stringify({event:'order.created',order_id:'ord_123',amount:29900,currency:'INR'},null,2)};
+$('#clearBtn').onclick=()=>{save('evs',[]);render()};
+$('#q').oninput=render;
+$('#exportBtn').onclick=()=>download('webhook-events.json',JSON.stringify(evs(),null,2));
+render();
+
+
+/* __REAL_SERVER_WIRING__ */
+async function __api(path, body){
+  try{
+    const r = await fetch(path, {method: body ? 'POST' : 'GET', headers: {'Content-Type':'application/json'}, body: body ? JSON.stringify(body) : undefined});
+    if(!r.ok) return null;
+    return await r.json();
+  }catch(e){ return null; }
+}
+let __serverUp = false;
+__api('/api/health').then(h => {
+  if(h && h.ok){
+    __serverUp = true;
+    const nav = document.querySelector('header nav');
+    if(nav){ const s=document.createElement('span'); s.textContent='● Live server'; s.style.cssText='color:#15803d;font-weight:600;font-size:13px'; nav.prepend(s); }
+  }
+});
+function __on(btnId, fn){
+  document.addEventListener('click', async (e) => {
+    const t = e.target && e.target.closest ? e.target.closest('#'+btnId) : null;
+    if(t && __serverUp){ e.stopPropagation(); e.preventDefault(); await fn(); }
+  }, true);
+}
+function __v(id){ const el=document.getElementById(id); return el ? el.value : ''; }
+
+(function(){
+  const cap=document.getElementById('captureBtn'); if(!cap) return;
+  cap.addEventListener('click', async ()=>{
+    if(!__serverUp) return;
+    let payload={}; try{ payload=JSON.parse(__v('payload')||'{}'); }catch(e){ return; }
+    await __api('/api/check',{capture:{source:__v('srcName'), payload}});
+    setTimeout(refresh, 400);
+  });
+  async function refresh(){
+    if(!__serverUp) return;
+    const out=await __api('/api/check',{list:true});
+    const box=document.getElementById('list'); if(!box || !out || !out.events) return;
+    box.innerHTML=out.events.map(ev=>'<div class="panel"><b>'+esc(ev.source)+'</b> <span class="muted">'+esc(ev.id)+' · '+esc(ev.at||'')+'</span><pre>'+esc(JSON.stringify(ev.payload,null,2))+'</pre></div>').join('') || '<p class="muted">No events yet. Point a webhook at POST /webhook/your-source on this server.</p>';
+  }
+  refresh();
+  window.__webhookRefresh=refresh;
+})();
+
+</script>
+</body>
+</html>
